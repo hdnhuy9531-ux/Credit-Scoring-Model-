@@ -7,6 +7,7 @@ The model uses the Logistic Regression algorithm combined with Weight of Evidenc
 - **Analyzed Variables:**
 
   **Target Variable:** Created from the loan_status column. A value of 1 (Bad) is assigned to risky loans (Default, Charged Off, Late), while 0 (Good) is assigned to safe loans (Fully Paid).
+  
   **Independent Variables:** Include customers’ financial information such as annual_inc (income), dti (debt-to-income ratio), int_rate (interest rate), loan_amnt (loan amount), home_ownership, emp_length (employment length), and other credit history variables.
 - **Access:** The dataset is loaded directly within the Jupyter Notebook.
 
@@ -70,13 +71,14 @@ print(df['target'].value_counts(normalize=True) * 100)
 
 - Output:
 
-Total rows after filtering: 1366817
+Total rows after filtering: 1,366,817
 
 Target Distribution:
 
 target
 
 0   78.778
+
 1   21.222
 
 Name: proportion, dtype: float64
@@ -93,20 +95,22 @@ df.head()
 **Dataset Shape:** 1,366,817 rows × 14 columns  
 **Memory Usage:** 156.4+ MB  
 
-| # | Column           | Non-Null Count | Data Type |
-|---|------------------|---------------|-----------|
-| 0 | loan_amnt        | 1,366,817     | float64   |
-| 1 | term             | 1,366,817     | object    |
-| 2 | int_rate         | 1,366,817     | float64   |
-| 3 | emp_length       | 1,286,450     | object    |
-| 4 | home_ownership   | 1,366,817     | object    |
-| 5 | annual_inc       | 1,366,817     | float64   |
-| 6 | loan_status      | 1,366,817     | object    |
-| 7 | dti              | 1,366,419     | float64   |
-| 8 | delinq_2yrs      | 1,366,817     | float64   |
-| 9 | inq_last_6mths   | 1,366,816     | float64   |
-|10 | open_acc         | 1,366,817     | float64   |
-|11 | revol_util       | 1,365,933     | float64   |_
+| #  | Column          | Non-Null Count | Data Type |
+|----|------------------|------------------|------------|
+| 0  | loan_amnt       | 1,366,817        | float64    |
+| 1  | term            | 1,366,817        | object     |
+| 2  | int_rate        | 1,366,817        | float64    |
+| 3  | emp_length      | 1,286,450        | object     |
+| 4  | home_ownership  | 1,366,817        | object     |
+| 5  | annual_inc      | 1,366,817        | float64    |
+| 6  | loan_status     | 1,366,817        | object     |
+| 7  | dti             | 1,366,419        | float64    |
+| 8  | delinq_2yrs     | 1,366,817        | float64    |
+| 9  | inq_last_6mths  | 1,366,816        | float64    |
+| 10 | open_acc        | 1,366,817        | float64    |
+| 11 | revol_util      | 1,365,933        | float64    |
+| 12 | bc_util         | 1,304,583        | float64    |
+| 13 | target          | 1,366,817        | int64      |
 
 | loan_amnt | term       | int_rate | emp_length | home_ownership | annual_inc | loan_status | dti  | delinq_2yrs | inq_last_6mths | open_acc | revol_util | bc_util | target |
 |-----------|------------|----------|------------|----------------|------------|-------------|------|--------------|----------------|-----------|-------------|---------|--------|
@@ -348,20 +352,22 @@ plt.show()
 -Output:
 --- 1. MISSING DATA RATIO & CORRELATION WITH TARGET ---
 
-| Feature          | Missing (%) | Corr with Target |
-|------------------|-------------|------------------|
-| target           | 0.000       | 1.000            |
-| int_rate         | 0.000       | 0.263            |
-| term             | 0.000       | 0.181            |
-| dti              | 0.029       | 0.107            |
-| loan_amnt        | 0.000       | 0.072            |
-| inq_last_6mths   | 0.000       | 0.062            |
-| bc_util          | 4.553       | 0.060            |
-| revol_util       | 0.065       | 0.055            |
-| open_acc         | 0.000       | 0.027            |
-| delinq_2yrs      | 0.000       | 0.020            |
-| emp_length       | 5.880       | -0.016_
-
+| Feature           | Missing (%) | Corr with Target |
+|------------------|------------|------------------|
+| target           | 0.000      | 1.000            |
+| int_rate         | 0.000      | 0.263            |
+| term             | 0.000      | 0.181            |
+| dti              | 0.029      | 0.107            |
+| loan_amnt        | 0.000      | 0.072            |
+| inq_last_6mths   | 0.000      | 0.062            |
+| bc_util          | 4.553      | 0.060            |
+| revol_util       | 0.065      | 0.055            |
+| open_acc         | 0.000      | 0.027            |
+| delinq_2yrs      | 0.000      | 0.020            |
+| emp_length       | 5.880      | -0.016           |
+| annual_inc       | 0.000      | -0.064           |
+| home_ownership   | 0.000      | NaN              |
+| loan_status      | 0.000      | NaN              |
 
 <img width="1989" height="1389" alt="image" src="https://github.com/user-attachments/assets/02c7bdf7-ad7e-4186-a6fa-cb35cc681331" />
 
@@ -435,27 +441,25 @@ print(iv_df)
 | term             | 0.000  |
 | delinq_2yrs      | 0.000  |
 
-Detailed IV Analysis & Feature Selection Strategy
+**Detailed IV Analysis & Feature Selection Strategy**
 
-The Top Performern - int_rate (0.412): This is a Strong Predictor. Interest rate serves as the primary risk indicator; higher rates directly correlate with a higher probability of default. This variable will be the backbone of your scoring model.
+**The Top Performern** - int_rate (0.412): This is a Strong Predictor. Interest rate serves as the primary risk indicator; higher rates directly correlate with a higher probability of default. This variable will be the backbone of your scoring model.
 
-Potential Predictors (IV 0.02 - 0.1): dti, loan_amnt, home_ownership, annual_inc, and bc_util.
+**Potential Predictors** (IV 0.02 - 0.1): dti, loan_amnt, home_ownership, annual_inc, and bc_util.
 
-These variables possess Medium Strength.
+These variables possess Medium Strength.While not dominant, they provide diverse perspectives on financial stability and collateral. All these features should be retained for the modeling phase.
 
-While not dominant, they provide diverse perspectives on financial stability and collateral. All these features should be retained for the modeling phase.
+**Weak Features & Candidates for Removal** (IV < 0.02): revol_util, inq_last_6mths, open_acc, emp_length, term, and delinq_2yrs.
 
-Weak Features & Candidates for Removal (IV < 0.02): revol_util, inq_last_6mths, open_acc, emp_length, term, and delinq_2yrs.
-
-**Observation on term: **Surprisingly, term shows an IV of 0.000 despite having a high Pearson correlation earlier. This is due to the qcut binning strategy (5 bins) applied to a variable that only has 2 unique values (36 and 60), causing the WoE calculation to lose its discriminative power.
+**Observation on term:** Surprisingly, term shows an IV of 0.000 despite having a high Pearson correlation earlier. This is due to the qcut binning strategy (5 bins) applied to a variable that only has 2 unique values (36 and 60), causing the WoE calculation to lose its discriminative power.
 
 Observation on emp_length: Unfortunately, employment length shows almost no predictive value for credit risk within this specific dataset.
 
-Next Steps: Feature Fine-Tuning Strategy We will not discard variables immediately. Instead, we will perform a Fine-tuning process on the most significant features.
+**Next Steps: Feature Fine-Tuning Strategy** We will not discard variables immediately. Instead, we will perform a Fine-tuning process on the most significant features.
 
 Action Plan: Examine the WoE trends for high-impact variables (especially int_rate and dti).
 
-Goal: Ensure Monotonicity—meaning that as the variable value increases, the risk (WoE) must increase or decrease consistently. This is crucial for the stability and interpretability of the final Logistic Regression model.
+**Goal:** Ensure Monotonicity—meaning that as the variable value increases, the risk (WoE) must increase or decrease consistently. This is crucial for the stability and interpretability of the final Logistic Regression model.
 
 - Import data:
 - Input:
