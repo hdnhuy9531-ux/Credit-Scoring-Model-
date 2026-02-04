@@ -349,7 +349,8 @@ plt.tight_layout()
 plt.show()
 ```
 
--Output:
+- Output:
+
 --- 1. MISSING DATA RATIO & CORRELATION WITH TARGET ---
 
 | Feature           | Missing (%) | Corr with Target |
@@ -492,7 +493,7 @@ WOE DETAILS FOR VARIABLE: int_rate
 
 <img width="866" height="730" alt="image" src="https://github.com/user-attachments/assets/319a954e-2861-4b99-827f-533871d725a8" />
 
-WoE Analysis Summary: int_rate
+**WoE Analysis Summary: int_rate**
 
 The Weight of Evidence (WoE) results for Interest Rate are highly logical and provide a robust foundation for the Scorecard model:
 
@@ -563,6 +564,8 @@ df_woe = df_woe.fillna(0)
 print("\n--- CHECKING DATA AFTER MAPPING ---")
 display(df_woe.head())
 ```
+
+- Output:
 
 --- APPLYING WOE ENCODING FOR SELECTED FEATURES ---
 Mapping: int_rate...
@@ -646,13 +649,13 @@ MODEL COEFFICIENTS (Impact of each variable in the equation):
 | int_rate         | -0.906      |
 | loan_amnt        | -0.993      |
 
-Model Evaluation & Coefficients Analysis
+**Model Evaluation & Coefficients Analysis**
 
-Classification Performance (AUC & Gini) Gini Index = 0.379 (37.9%): This is a solid and realistic result for Lending Club data.
+**Classification Performance (AUC & Gini)** Gini Index = 0.379 (37.9%): This is a solid and realistic result for Lending Club data.
 In the banking industry, a Gini between 0.30 and 0.45 is considered acceptable for production use. It demonstrates that the model possesses a strong ability to differentiate between "Good" and "Bad" borrowers, performing significantly better than random guessing.
 
-Model Coefficients & Key Insights Sign Direction: Most coefficients are negative (e.g., -0.90, -0.99). In a Logistic Regression model trained on WoE, a negative coefficient implies that as the WoE increases, the probability of default (Target=1) decreases.
-Variable Impact:
+**Model Coefficients & Key Insights** Sign Direction: Most coefficients are negative (e.g., -0.90, -0.99). In a Logistic Regression model trained on WoE, a negative coefficient implies that as the WoE increases, the probability of default (Target=1) decreases.
+**Variable Impact:**
 
 loan_amnt (-0.993) and int_rate (-0.906): These are the most influential drivers. Changes in loan amounts and interest rates trigger the most significant shifts in the final credit score.
 
@@ -742,21 +745,26 @@ Scaling Parameters: Factor = 28.85, Offset = 487.12
 | 75%        | 506.000    |
 | Max        | 543.000    |
 
-Scorecard Scaling Analysis
+**Scorecard Scaling Analysis**
 
-Score Range Observations Narrow Distribution: The generated scores range from 443 to 543, with an average of 491.
+**Score Range Observations Narrow Distribution:** 
+
+The generated scores range from 443 to 543, with an average of 491.
 The Issue: While the industry standard often spans from 300 to 850, this specific model results in a tighter cluster (approx. 100-point spread).
 
 Root Cause: This occurs because the model Coefficients are relatively small, and the primary predictor (int_rate) does not have a wide enough discriminatory range to push scores to the extremes. However, the ranking logic remains perfectly sound.
 
-Score Sensitivity (Score vs. Risk) The scoring system demonstrates a clear inverse relationship between score and probability of default:
+**Score Sensitivity (Score vs. Risk)** 
+
+The scoring system demonstrates a clear inverse relationship between score and probability of default:
 Low Risk: A borrower with Prob_Bad = 0.253 receives a score of 518.
 
 High Risk: A borrower with Prob_Bad = 0.740 is penalized, with a score dropping to 456.
 
 Conclusion: The scorecard is logically consistent and stable. Higher scores reliably correspond to lower risk.
 
-Scaling Parameter Insights
+**Scaling Parameter Insights**
+
 Factor (28.85): This is the amplification coefficient. At this level, every unit of change in the log-odds shifts the credit score by approximately 29 points.
 
 Offset (487.12): This acts as the "starting point" or intercept. It explains why the majority of the population is centered around the 490-point mark.
@@ -825,28 +833,128 @@ display(rank_order.sort_values('Score_Range', ascending=False))
 | (453.0, 463.0]   | 33,951           | 41.31          |
 | (442.9, 453.0]   | 9,292            | 50.90          |
 
-Final Model Validation: Rank-Ordering & Business Strategy
+**Final Model Validation: Rank-Ordering & Business Strategy**
 
-Excellent Rank-Ordering Performance The most valuable takeaway from this table is the perfectly monotonic decrease in the Bad_Rate as the credit score increases:
+- Excellent Rank-Ordering Performance The most valuable takeaway from this table is the perfectly monotonic decrease in the Bad_Rate as the credit score increases:
+
 Highest Risk Group (442.9, 453.0]: Has the highest default rate at 50.90%.
-
 Lowest Risk Group (533.0, 543.0]: Has the lowest default rate at only 4.50%.
 
-Conclusion: The model demonstrates powerful risk discrimination. Borrowers in the lowest score band are 11 times more likely to default than those in the highest band.
+**Conclusion:** The model demonstrates powerful risk discrimination. Borrowers in the lowest score band are 11 times more likely to default than those in the highest band.
 
-Business Implications & Approval Thresholds (Cut-off) Based on this rank-ordering, we can establish practical business rules similar to those used by a Chief Risk Officer (CRO):
+- Business Implications & Approval Thresholds (Cut-off) Based on this rank-ordering, we can establish practical business rules similar to those used by a Chief Risk Officer (CRO):
 Green Zone (Automatic Approval): Scores above 523. With a default rate between 4% and 6%, these applications can be fast-tracked for instant approval.
 
 Yellow Zone (Conditional Review): Scores between 483 and 513. Default rates range from 11% to 20%. These cases may require manual underwriting, additional documentation, or collateral.
 
 Red Zone (Automatic Rejection): Scores below 473. The default rate surges above 33%. Lending to this group should be avoided to protect capital.
 
-Population Distribution Insights The largest segment of your portfolio is concentrated in the 483 - 493 score range (76,022 customers). This "mass-market" segment has a default rate of approximately 20%, which aligns perfectly with the overall default rate observed during the initial data exploration phase.
+- Population Distribution Insights The largest segment of your portfolio is concentrated in the 483 - 493 score range (76,022 customers). This "mass-market" segment has a default rate of approximately 20%, which aligns perfectly with the overall default rate observed during the initial data exploration phase.
 
+## Step 7: Validation and Comparison Model
+### 7.1 Build a quick Prediction & Scoring function
+- Import data:
+- Input:
+```python
+def credit_scoring_system(input_data):
+    """
+    input_data: Dictionary containing customer information
+    """
+    # 1. Create a DataFrame for processing
+    test_case = pd.DataFrame([input_data])
 
+    # 2. Apply Preprocessing and WoE Mapping (as defined in previous steps)
+    # In a production environment, you would map the raw input to its corresponding
+    # WoE values and then use lr_model.predict_proba.
 
+    # Simulation: Selecting a random sample from the test results for demonstration
+    sample_data = df_test_results.sample(1)
+    score = sample_data['Score'].values[0]
+    prob = sample_data['Prob_Bad'].values[0]
 
+    # 3. Decision Logic based on the Cut-off threshold (Example: 500 points)
+    # The threshold is determined by the business risk appetite
+    decision = "APPROVE" if score >= 500 else "REJECT"
 
+    print(f"--- CREDIT SCORING ASSESSMENT ---")
+    print(f"Credit Score: {score}")
+    print(f"Probability of Default: {prob:.2%}")
+    print(f"System Decision: {decision}")
+    print(f"---------------------------------")
+
+# Running a test trial
+# Note: Since the logic above is a simulation using df_test_results,
+# the empty dict acts as a placeholder.
+credit_scoring_system({})
+```
+
+- Output 1:
+
+--- CREDIT SCORING ASSESSMENT ---
+Credit Score: 507
+Probability of Default: 32.99%
+System Decision: APPROVE
+
+- Output 2:
+
+--- CREDIT SCORING ASSESSMENT ---
+Credit Score: 480
+Probability of Default: 55.29%
+System Decision: REJECT
+
+### 7.2 Comparison of the model with reality (Calibration Plot)
+- Import data:
+- Input:
+```python
+from sklearn.calibration import calibration_curve
+
+# Calculate the calibration curve (reliability curve)
+prob_true, prob_pred = calibration_curve(y_test, y_pred_prob, n_bins=10)
+
+plt.figure(figsize=(8, 6))
+# Plot the model's performance
+plt.plot(prob_pred, prob_true, marker='o', label='Scorecard Model')
+# Plot the diagonal line representing perfect calibration
+plt.plot([0, 1], [0, 1], linestyle='--', label='Perfectly Calibrated')
+
+plt.xlabel('Predicted Probability of Default')
+plt.ylabel('Actual Default Rate')
+plt.title('Calibration Curve: Scorecard Reliability Check')
+plt.legend()
+plt.show()
+```
+
+<img width="691" height="547" alt="image" src="https://github.com/user-attachments/assets/26c799ea-2e6d-446a-80d6-7d65751661b6" />
+
+Trend Observation Positive Correlation: The blue line (Scorecard Model) shows a consistent upward trend. This confirms a strong logical relationship: as the predicted probability of default increases, the actual default rate increases accordingly.
+
+Calibration Bias: Over-Optimistic Model Observation: The model curve lies consistently below the 45-degree reference line (Perfectly Calibrated).
+
+Implication: The model is currently over-optimistic regarding risk severity.
+
+Example: When the model predicts an 80% probability of default, the actual observed default rate is only around 50%. The model tends to "over-penalize" or overestimate the risk compared to reality.
+
+Segment Reliability Low-Risk Segment (Prob < 0.4): The model is well-calibrated and highly accurate. The blue line remains close to the diagonal, indicating reliable predictions for "Good" customers.
+High-Risk Segment (Prob > 0.6): The gap between the model and the reference line widens significantly. The highest error margin occurs in the segment flagged by the model as high-risk.
+
+Overall Evaluation & Root Cause Conclusion: The model has excellent Discrimination (ranking high-risk vs. low-risk) but requires better Probability Calibration for financial forecasting accuracy.
+Root Cause Analysis: This bias is a direct result of using class_weight='balanced' during Logistic Regression training. While this parameter boosts the model's ability to detect defaults (increasing Gini/AUC), it inherently inflates the predicted probabilities, shifting the calibration curve downward.
+
+## Step 8: Conclusion
+
+The project successfully developed a comprehensive Credit Scoring Card model that meets key technical standards in financial risk management.
+
+Reliable Performance: With a Gini coefficient of 37.9% and an AUC of 0.6895, the model demonstrates stable performance and is capable of effectively distinguishing between Good and Bad borrowers under real-world data conditions.
+
+Risk Rank-Ordering: Empirical results reveal a strong relationship between credit scores and actual risk — higher scores correspond to lower default rates, decreasing significantly from 50.9% in the lowest score band to 4.5% in the highest score band.
+
+Business Value
+
+Automation: Reduces manual underwriting time through an automated scoring system.
+
+Strategic Optimization: Based on the scorecard, banks can establish flexible approval cut-off scores to balance credit growth objectives with bad debt control.
+
+Transparency: The scorecard methodology clearly explains loan approval or rejection decisions by quantifying the contribution of each financial variable.
 
 
 
